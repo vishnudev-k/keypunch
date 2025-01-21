@@ -183,6 +183,18 @@ template $KpWindow: Adw.ApplicationWindow {
                       "flat"
                     ]
                   }
+
+                  Button prompt_button {
+                    Adw.ButtonContent {
+                      use-underline: true;
+                      icon-name: "edit-symbolic";
+                      label: _("_Edit Prompt");
+                    }
+
+                    styles [
+                      "flat"
+                    ]
+                  }
                 }
               };
             }

@@ -155,7 +155,7 @@ impl imp::KpWindow {
 
         match self.session_type.get() {
             SessionType::Simple | SessionType::Advanced => self.start_timer(),
-            SessionType::Custom => (),
+            SessionType::Custom | SessionType::AI => (),
         }
 
         self.obj()

@@ -51,6 +51,8 @@ mod imp {
         #[template_child]
         pub duration_dropdown: TemplateChild<gtk::DropDown>,
         #[template_child]
+        pub prompt_button: TemplateChild<gtk::Button>,
+        #[template_child]
         pub custom_button: TemplateChild<gtk::Button>,
         #[template_child]
         pub stop_button: TemplateChild<gtk::Button>,

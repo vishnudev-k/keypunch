@@ -289,6 +289,23 @@ pub fn advanced(language: Language) -> String {
     }
 }
 
+pub fn ai(language: Language) -> String {
+    //TODO modify this function to be driven by ai
+    match language {
+        //TODO pass prompt from session
+        _ => ai_generate(&language.to_string(), "Generate a paragraph about programming in about 2 sentences."),
+    }
+}
+
+fn ai_generate(lang_code: &str, prompt: &str) -> String {  
+
+    return "This is AI generated text".to_string()
+}
+
+
+
+
+
 // Should work for most languages
 fn simple_generic(lang_code: &str, spacing: &str) -> String {
     let mut rng = thread_rng();

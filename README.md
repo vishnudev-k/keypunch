@@ -1,5 +1,12 @@
 ![icon](/data/icons/dev.bragefuglseth.Keypunch.svg)
 
+to run
+```
+glib-compile-schemas data/
+export GSETTINGS_SCHEMA_DIR=./data/
+cargo run
+```
+
 # Keypunch
 
 [![Available on Flathub](https://img.shields.io/flathub/downloads/dev.bragefuglseth.Keypunch?logo=flathub&labelColor=77767b&color=4a90d9)](https://flathub.org/apps/dev.bragefuglseth.Keypunch)

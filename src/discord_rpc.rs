@@ -69,6 +69,7 @@ impl Default for RpcWrapper {
                     let details_string = match session_type {
                         SessionType::Simple => format!("Simple, {}", duration.english_string()),
                         SessionType::Advanced => format!("Advanced, {}", duration.english_string()),
+                        SessionType::AI => format!("AI, {}", duration.english_string()),
                         SessionType::Custom => "Custom text".to_string(),
                     };
 

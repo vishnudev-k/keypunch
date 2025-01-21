@@ -83,6 +83,16 @@ impl imp::KpWindow {
             }
         ));
 
+        self.prompt_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = imp)]
+            self,
+            move |_| {
+                let current_text = imp.custom_text.borrow();
+                imp.show_prompt_text_dialog(&current_text);
+            }
+        ));
+
+
         self.add_recent_language(self.language.get());
     }
 
@@ -132,7 +142,7 @@ impl imp::KpWindow {
 
                     match imp.session_type.get() {
                         SessionType::Simple | SessionType::Advanced => (),
-                        SessionType::Custom => {
+                        SessionType::Custom | SessionType::AI => {
                             let (current_word, total_words) = text_view.progress();
 
                             // Translators: The `{}` blocks will be replaced with the current word count and the total word count.
@@ -173,6 +183,7 @@ impl imp::KpWindow {
             SessionType::Simple | SessionType::Advanced => {
                 self.duration_dropdown.get().upcast::<gtk::Widget>()
             }
+            SessionType::AI  => self.prompt_button.get().upcast::<gtk::Widget>(),
             SessionType::Custom => self.custom_button.get().upcast::<gtk::Widget>(),
         };
 
@@ -184,6 +195,7 @@ impl imp::KpWindow {
         let new_original = match session_type {
             SessionType::Simple => text_generation::simple(self.language.get()),
             SessionType::Advanced => text_generation::advanced(self.language.get()),
+            SessionType::AI => text_generation::ai(self.language.get()),
             SessionType::Custom => process_custom_text(&self.custom_text.borrow()),
         };
         self.text_view.set_original_text(&new_original);
@@ -375,12 +387,91 @@ impl imp::KpWindow {
         dialog.present(Some(self.obj().upcast_ref::<gtk::Widget>()));
     }
 
+    //TODO modify this code to accept prompt and pass it to llm and then update the user text with new generated text.
+    pub fn show_prompt_text_dialog(&self, initial_text: &str) {
+        if self.running.get() || self.obj().visible_dialog().is_some() {
+            return;
+        }
+
+        let current_text = self.custom_text.borrow();
+        let dialog = KpCustomTextDialog::new(&current_text, &initial_text);
+
+        dialog.connect_local(
+            "save",
+            true,
+            glib::clone!(
+                #[weak(rename_to = imp)]
+                self,
+                #[upgrade_or_default]
+                move |values| {
+                    let text: &str = values
+                        .get(1)
+                        .expect("save signal contains text to be saved")
+                        .get()
+                        .expect("value from save signal is string");
+
+                    imp.settings().set_string("custom-text", &text).unwrap();
+                    *imp.custom_text.borrow_mut() = text.to_string();
+                    imp.update_original_text();
+
+                    None
+                }
+            ),
+        );
+
+        dialog.connect_local(
+            "discard",
+            true,
+            glib::clone!(
+                #[weak(rename_to = imp)]
+                self,
+                #[upgrade_or_default]
+                move |values| {
+                    let discarded_text: String = values
+                        .get(1)
+                        .expect("save signal contains text to be saved")
+                        .get::<&str>()
+                        .expect("value from save signal is string")
+                        .into();
+
+                    let toast = adw::Toast::builder()
+                        .title(&gettext("Changes discarded"))
+                        .button_label(&gettext("Restore"))
+                        .build();
+
+                    toast.connect_button_clicked(glib::clone!(
+                        #[weak]
+                        imp,
+                        move |_| {
+                            imp.show_custom_text_dialog(&discarded_text);
+                        }
+                    ));
+
+                    imp.toast_overlay.add_toast(toast);
+
+                    None
+                }
+            ),
+        );
+
+        dialog.connect_closed(glib::clone!(
+            #[weak(rename_to = imp)]
+            self,
+            move |_| {
+                imp.focus_text_view();
+            }
+        ));
+
+        dialog.present(Some(self.obj().upcast_ref::<gtk::Widget>()));
+    }
+
+
     pub(super) fn extend_original_text(&self) {
         let language = self.language.get();
         let new_chunk = match self.session_type.get() {
             SessionType::Simple => text_generation::simple(language),
             SessionType::Advanced => text_generation::advanced(language),
-            SessionType::Custom => {
+            SessionType::Custom | SessionType::AI => {
                 return;
             }
         };

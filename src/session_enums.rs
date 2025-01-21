@@ -25,6 +25,7 @@ pub enum SessionType {
     #[default]
     Simple,
     Advanced,
+    AI,
     Custom,
 }
 
@@ -33,6 +34,7 @@ impl SessionType {
         match self {
             SessionType::Simple => gettext("Simple"),
             SessionType::Advanced => gettext("Advanced"),
+            SessionType::AI => gettext("AI"),
             SessionType::Custom => gettext("Custom"),
         }
     }
