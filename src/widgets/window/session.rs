@@ -21,7 +21,7 @@ use super::*;
 use crate::application::KpApplication;
 use crate::text_generation;
 use crate::text_utils::{calculate_accuracy, calculate_wpm, process_custom_text, GraphemeState};
-use crate::widgets::{KpCustomTextDialog, KpTextLanguageDialog};
+use crate::widgets::{KpCustomTextDialog, KpTextLanguageDialog, KpPromptDialog};
 use gettextrs::gettext;
 use glib::ControlFlow;
 use i18n_format::i18n_fmt;
@@ -87,8 +87,8 @@ impl imp::KpWindow {
             #[weak(rename_to = imp)]
             self,
             move |_| {
-                let current_text = imp.custom_text.borrow();
-                imp.show_prompt_text_dialog(&current_text);
+                let current_prompt = imp.prompt.borrow();
+                imp.show_prompt_text_dialog(&current_prompt);
             }
         ));
 
@@ -195,7 +195,7 @@ impl imp::KpWindow {
         let new_original = match session_type {
             SessionType::Simple => text_generation::simple(self.language.get()),
             SessionType::Advanced => text_generation::advanced(self.language.get()),
-            SessionType::AI => text_generation::ai(self.language.get()),
+            SessionType::AI => text_generation::ai(self.language.get(), &self.prompt.borrow(),self.ollama_url.borrow()),
             SessionType::Custom => process_custom_text(&self.custom_text.borrow()),
         };
         self.text_view.set_original_text(&new_original);
@@ -387,14 +387,13 @@ impl imp::KpWindow {
         dialog.present(Some(self.obj().upcast_ref::<gtk::Widget>()));
     }
 
-    //TODO modify this code to accept prompt and pass it to llm and then update the user text with new generated text.
     pub fn show_prompt_text_dialog(&self, initial_text: &str) {
         if self.running.get() || self.obj().visible_dialog().is_some() {
             return;
         }
 
-        let current_text = self.custom_text.borrow();
-        let dialog = KpCustomTextDialog::new(&current_text, &initial_text);
+        let current_text = self.prompt.borrow();
+        let dialog = KpPromptDialog::new(&current_text, &initial_text);
 
         dialog.connect_local(
             "save",
@@ -410,8 +409,8 @@ impl imp::KpWindow {
                         .get()
                         .expect("value from save signal is string");
 
-                    imp.settings().set_string("custom-text", &text).unwrap();
-                    *imp.custom_text.borrow_mut() = text.to_string();
+                    imp.settings().set_string("prompt", &text).unwrap();
+                    *imp.prompt.borrow_mut() = text.to_string();
                     imp.update_original_text();
 
                     None
@@ -443,7 +442,7 @@ impl imp::KpWindow {
                         #[weak]
                         imp,
                         move |_| {
-                            imp.show_custom_text_dialog(&discarded_text);
+                            imp.show_prompt_text_dialog(&discarded_text);
                         }
                     ));
 

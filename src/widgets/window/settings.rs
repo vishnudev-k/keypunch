@@ -36,6 +36,7 @@ impl imp::KpWindow {
         let language = settings.string("text-language");
         let recent_languages = settings.value("recent-languages");
         let custom_text = settings.string("custom-text");
+        let prompt = settings.string("prompt");
 
         let obj = self.obj();
         obj.set_default_size(width, height);
@@ -64,6 +65,8 @@ impl imp::KpWindow {
         }
 
         *self.custom_text.borrow_mut() = custom_text.into();
+        *self.prompt.borrow_mut() = prompt.into();
+        
     }
 
     pub(super) fn save_window_size(&self) -> Result<(), glib::BoolError> {

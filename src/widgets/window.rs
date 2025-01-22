@@ -33,6 +33,7 @@ use gettextrs::gettext;
 use gtk::{gio, glib};
 use std::cell::{Cell, OnceCell, RefCell};
 use std::time::{Duration, Instant};
+use url::Url;
 
 mod imp {
     use super::*;
@@ -83,7 +84,9 @@ mod imp {
 
         pub session_type: Cell<SessionType>,
         pub language: Cell<Language>,
+        pub ollama_url: RefCell<Option<Url>>,
         pub recent_languages: RefCell<Vec<Language>>,
+        pub prompt: RefCell<String>,
         pub custom_text: RefCell<String>,
         pub duration: Cell<SessionDuration>,
         pub start_time: Cell<Option<Instant>>,

@@ -54,6 +54,11 @@
 	    <summary>Custom Text</summary>
 	    <description>Text displayed when “Custom” is chosen from the session menu</description>
 	  </key>
+	  <key name="prompt" type="s">
+	    <default l10n="messages" >"Write a short, imaginative story about a mystical forest where all the animals can talk. The story can include characters like baby dragon, cute puppy, lion, clever fox etc. The story should have a theme of friendship and cooperation."</default>
+	    <summary>Custom Prompt</summary>
+	    <description>The prompt used by the AI to generate text</description>
+	  </key>
 	  <key name="personal-best" type="a(sssu)">
 	    <default>[]</default>
 	    <summary>Personal Best</summary>

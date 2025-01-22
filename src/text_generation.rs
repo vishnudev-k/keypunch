@@ -17,11 +17,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::cell::Ref;
+
 use include_dir::{include_dir, Dir};
+use ollama_rs::generation::options::GenerationOptions;
 use rand::prelude::*;
 use rand::seq::index::sample;
 use strum_macros::{Display as EnumDisplay, EnumIter, EnumMessage, EnumString};
 use unicode_segmentation::UnicodeSegmentation;
+use ollama_rs::Ollama;
+use ollama_rs::generation::completion::request::GenerationRequest;
+use url::Url;
 
 static EMBEDDED_WORD_LIST_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/data/word_lists");
 pub const CHUNK_GRAPHEME_COUNT: usize = 400;
@@ -289,22 +295,16 @@ pub fn advanced(language: Language) -> String {
     }
 }
 
-pub fn ai(language: Language) -> String {
-    //TODO modify this function to be driven by ai
+pub fn ai(language: Language, prompt: &String, ollama_url: Ref<Option<Url>>) -> String {
+
+    let default_ollama_url: Url = Url::parse("http://172.16.180.1:11434").unwrap();
+    let url = ollama_url.clone().unwrap_or(default_ollama_url);
+    //println!("{:?}", ollama_url);
     match language {
         //TODO pass prompt from session
-        _ => ai_generate(&language.to_string(), "Generate a paragraph about programming in about 2 sentences."),
+        _ => ai_generate(prompt, url),
     }
 }
-
-fn ai_generate(lang_code: &str, prompt: &str) -> String {  
-
-    return "This is AI generated text".to_string()
-}
-
-
-
-
 
 // Should work for most languages
 fn simple_generic(lang_code: &str, spacing: &str) -> String {
@@ -367,6 +367,34 @@ fn advanced_generic(
 
     generated.into_iter().map(|s| s + spacing).collect()
 }
+
+
+fn ai_generate(prompt: &str, ollama_url: Url) -> String {  
+    //TODO: the host name and model name should be should be config driven
+    let ollama = Ollama::from_url(ollama_url);
+    
+    let model = "granite3-dense:latest".to_string();
+    //let model = "llama3.1:latest".to_string();
+    //let prompt = "Why is the sky blue?".to_string();
+    let rt = tokio::runtime::Runtime::new().unwrap();
+
+
+    let options = GenerationOptions::default()
+    .temperature(0.9);//.repeat_penalty(1.5).top_k(25).top_p(0.25);
+
+    //TODO: The patterns of asnyc fuction blocking thread would be problematic.
+    let res =   rt.block_on(ollama.generate(GenerationRequest::new(model, prompt.to_string()).options(options)));
+    
+    if let Ok(res) = res {
+        return res.response.to_string()
+        //println!("{}", );
+    }else{
+        return res.unwrap_err().to_string()
+    }
+}
+
+
+
 
 fn uppercase_first_letter(s: &str) -> String {
     s.chars()
