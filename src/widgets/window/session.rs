@@ -313,7 +313,7 @@ impl imp::KpWindow {
                         .unwrap();
 
                     imp.settings()
-                        .set_string("ollama-model", &dialog.get_ollama_url().to_string())
+                        .set_string("ollama-model", &dialog.get_model_name().to_string())
                         .unwrap();
 
                     imp.update_original_text();
