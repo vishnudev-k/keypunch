@@ -43,6 +43,17 @@
 	    <summary>Text Language</summary>
 	    <description>The code of the language used for automatically generated text</description>
 	  </key>
+	  <key name="ollama-url" type="s">
+	    <default l10n="messages">"http://localhost:11434"</default>
+	    <summary>Ollama</summary>
+	    <description>The host where the ollama server is running</description>
+	  </key>
+	  <key name="ollama-model" type="s">
+	    <default l10n="messages">"granite3-dense"</default>
+	    <summary>Ollama</summary>
+	    <description>Ollama must be running with the model. use ollama run granite3-dense</description>
+	  </key>
+
 	  <key name="recent-languages" type="as">
 	    <default>[]</default>
 	    <summary>Recent Languages</summary>

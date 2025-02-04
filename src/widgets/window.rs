@@ -85,6 +85,7 @@ mod imp {
         pub session_type: Cell<SessionType>,
         pub language: Cell<Language>,
         pub ollama_url: RefCell<Option<Url>>,
+        pub ollama_model: RefCell<Option<String>>,
         pub recent_languages: RefCell<Vec<Language>>,
         pub prompt: RefCell<String>,
         pub custom_text: RefCell<String>,
@@ -116,6 +117,10 @@ mod imp {
 
             klass.install_action("win.text-language-dialog", None, move |window, _, _| {
                 window.imp().show_text_language_dialog();
+            });
+
+            klass.install_action("win.ollama-config-dialog", None, move |window, _, _| {
+                window.imp().show_ollama_config_dialog();
             });
 
             klass.install_action("win.cancel-session", None, move |window, _, _| {

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::cell::Ref;
+use std::cell::{Ref};
 
 use include_dir::{include_dir, Dir};
 use ollama_rs::generation::options::GenerationOptions;
@@ -295,14 +295,10 @@ pub fn advanced(language: Language) -> String {
     }
 }
 
-pub fn ai(language: Language, prompt: &String, ollama_url: Ref<Option<Url>>) -> String {
+pub fn ai(language: Language, prompt: &String, ollama_model:Ref<Option<String>>,ollama_url: Ref<Option<Url>>) -> String {
 
-    let default_ollama_url: Url = Url::parse("http://172.16.180.1:11434").unwrap();
-    let url = ollama_url.clone().unwrap_or(default_ollama_url);
-    //println!("{:?}", ollama_url);
     match language {
-        //TODO pass prompt from session
-        _ => ai_generate(prompt, url),
+        _ => ai_generate(prompt.to_string(), ollama_model.clone().unwrap(), ollama_url.clone().unwrap()),
     }
 }
 
@@ -369,13 +365,8 @@ fn advanced_generic(
 }
 
 
-fn ai_generate(prompt: &str, ollama_url: Url) -> String {  
-    //TODO: the host name and model name should be should be config driven
+fn ai_generate(prompt: String, ollama_model: String,ollama_url: Url) -> String {  
     let ollama = Ollama::from_url(ollama_url);
-    
-    let model = "granite3-dense:latest".to_string();
-    //let model = "llama3.1:latest".to_string();
-    //let prompt = "Why is the sky blue?".to_string();
     let rt = tokio::runtime::Runtime::new().unwrap();
 
 
@@ -383,12 +374,12 @@ fn ai_generate(prompt: &str, ollama_url: Url) -> String {
     .temperature(0.9);//.repeat_penalty(1.5).top_k(25).top_p(0.25);
 
     //TODO: The patterns of asnyc fuction blocking thread would be problematic.
-    let res =   rt.block_on(ollama.generate(GenerationRequest::new(model, prompt.to_string()).options(options)));
+    let res =   rt.block_on(ollama.generate(GenerationRequest::new(ollama_model, prompt).options(options)));
     
     if let Ok(res) = res {
         return res.response.to_string()
-        //println!("{}", );
     }else{
+        //TODO handle excpetion cases properly 
         return res.unwrap_err().to_string()
     }
 }

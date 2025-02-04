@@ -21,7 +21,7 @@ use super::*;
 use crate::application::KpApplication;
 use crate::text_generation;
 use crate::text_utils::{calculate_accuracy, calculate_wpm, process_custom_text, GraphemeState};
-use crate::widgets::{KpCustomTextDialog, KpTextLanguageDialog, KpPromptDialog};
+use crate::widgets::{KpCustomTextDialog, KpTextLanguageDialog, KpOllamaConfigDialog, KpPromptDialog};
 use gettextrs::gettext;
 use glib::ControlFlow;
 use i18n_format::i18n_fmt;
@@ -195,7 +195,7 @@ impl imp::KpWindow {
         let new_original = match session_type {
             SessionType::Simple => text_generation::simple(self.language.get()),
             SessionType::Advanced => text_generation::advanced(self.language.get()),
-            SessionType::AI => text_generation::ai(self.language.get(), &self.prompt.borrow(),self.ollama_url.borrow()),
+            SessionType::AI => text_generation::ai(self.language.get(), &self.prompt.borrow(),self.ollama_model.borrow(), self.ollama_url.borrow()),
             SessionType::Custom => process_custom_text(&self.custom_text.borrow()),
         };
         self.text_view.set_original_text(&new_original);
@@ -284,6 +284,48 @@ impl imp::KpWindow {
 
         dialog.present(Some(self.obj().upcast_ref::<gtk::Widget>()));
     }
+
+    pub(super) fn show_ollama_config_dialog(&self) {
+        if self.running.get() || self.obj().visible_dialog().is_some() {
+            return;
+        }
+        let dialog: KpOllamaConfigDialog =
+            KpOllamaConfigDialog::new(self.ollama_url.borrow().as_ref().unwrap(), &self.ollama_model.borrow().as_ref().unwrap());
+
+        dialog.connect_local(
+            "save",
+            true,
+            glib::clone!(
+                #[weak(rename_to = imp)]
+                self,
+                #[upgrade_or_default]
+                move |values| {
+                    let dialog: KpOllamaConfigDialog = values
+                        .get(0)
+                        .expect("signal contains value at index 0")
+                        .get()
+                        .expect("value sent with signal is dialog");
+
+                    *imp.ollama_url.borrow_mut() = Some(dialog.get_ollama_url());
+                    *imp.ollama_model.borrow_mut() = Some(dialog.get_model_name());
+                    imp.settings()
+                        .set_string("ollama-url", &dialog.get_ollama_url().to_string())
+                        .unwrap();
+
+                    imp.settings()
+                        .set_string("ollama-model", &dialog.get_ollama_url().to_string())
+                        .unwrap();
+
+                    imp.update_original_text();
+
+                    None
+                }
+            ),
+        );
+
+        dialog.present(Some(self.obj().upcast_ref::<gtk::Widget>()));
+    }
+
 
     fn add_recent_language(&self, language: Language) {
         let mut recent_languages = self.recent_languages.borrow_mut();

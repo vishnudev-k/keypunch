@@ -34,6 +34,8 @@ impl imp::KpWindow {
         let session_type = settings.string("session-type");
         let duration = settings.string("session-duration");
         let language = settings.string("text-language");
+        let ollama_url = settings.string("ollama-url");
+        let ollama_model = settings.string("ollama-model");
         let recent_languages = settings.value("recent-languages");
         let custom_text = settings.string("custom-text");
         let prompt = settings.string("prompt");
@@ -49,6 +51,12 @@ impl imp::KpWindow {
 
         self.language
             .set(Language::from_str(language.as_str()).unwrap_or(Language::English));
+
+        let urlref = Url::parse(ollama_url.as_str()).unwrap_or(Url::parse("http://localhost:11434").unwrap());
+        let _ = self.ollama_url.borrow_mut().insert(urlref);
+
+
+        let _ = self.ollama_model.borrow_mut().insert(ollama_model.as_str().to_string());
 
         let recent_languages_vec: Vec<Language> = recent_languages
             .get::<Vec<String>>()

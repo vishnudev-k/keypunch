@@ -105,6 +105,7 @@ impl imp::KpWindow {
 
         self.obj()
             .action_set_enabled("win.text-language-dialog", true);
+        self.obj().action_set_enabled("ollama-config-dialog", true);
         self.obj().action_set_enabled("win.cancel-session", false);
         self.obj().remove_css_class("hide-controls");
 
@@ -160,6 +161,7 @@ impl imp::KpWindow {
 
         self.obj()
             .action_set_enabled("win.text-language-dialog", false);
+        self.obj().action_set_enabled("ollama-config-dialog", false);
         self.obj().action_set_enabled("win.cancel-session", true);
         self.obj().add_css_class("hide-controls");
 
@@ -233,6 +235,7 @@ impl imp::KpWindow {
 
         self.obj()
             .action_set_enabled("win.text-language-dialog", false);
+        self.obj().action_set_enabled("ollama-config-dialog", false);
         self.obj().action_set_enabled("win.cancel-session", false);
 
         self.end_existing_inhibit();
