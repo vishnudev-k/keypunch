@@ -371,7 +371,7 @@ fn ai_generate(prompt: String, ollama_model: String,ollama_url: Url) -> String {
 
 
     let options = GenerationOptions::default()
-    .temperature(0.9);//.repeat_penalty(1.5).top_k(25).top_p(0.25);
+    .temperature(1.0).repeat_penalty(1.5).top_k(25).top_p(0.25);
 
     //TODO: The patterns of asnyc fuction blocking thread would be problematic.
     let res =   rt.block_on(ollama.generate(GenerationRequest::new(ollama_model, prompt).options(options)));
